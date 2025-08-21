@@ -189,6 +189,22 @@ const Contact = () => {
 
           <div className="contact-form">
             <h3>Send a Message</h3>
+            
+            {/* Status Messages */}
+            {formStatus.isSuccess && (
+              <div className="status-message success-message">
+                <CheckCircle size={20} />
+                <span>{formStatus.successMessage}</span>
+              </div>
+            )}
+            
+            {formStatus.isError && (
+              <div className="status-message error-message">
+                <AlertCircle size={20} />
+                <span>{formStatus.errorMessage}</span>
+              </div>
+            )}
+            
             <form onSubmit={handleSubmit}>
               <div className="form-group">
                 <label htmlFor="name">Name</label>
@@ -200,6 +216,7 @@ const Contact = () => {
                   onChange={handleInputChange}
                   required
                   placeholder="Your full name"
+                  disabled={formStatus.isSubmitting}
                 />
               </div>
 
@@ -213,6 +230,7 @@ const Contact = () => {
                   onChange={handleInputChange}
                   required
                   placeholder="your.email@example.com"
+                  disabled={formStatus.isSubmitting}
                 />
               </div>
 
@@ -226,6 +244,7 @@ const Contact = () => {
                   onChange={handleInputChange}
                   required
                   placeholder="Project inquiry / Collaboration / Job opportunity"
+                  disabled={formStatus.isSubmitting}
                 />
               </div>
 
@@ -239,12 +258,26 @@ const Contact = () => {
                   required
                   rows="6"
                   placeholder="Tell me about your project or opportunity..."
+                  disabled={formStatus.isSubmitting}
                 ></textarea>
               </div>
 
-              <button type="submit" className="btn-primary">
-                <Send size={18} />
-                Send Message
+              <button 
+                type="submit" 
+                className={`btn-primary ${formStatus.isSubmitting ? 'btn-loading' : ''}`}
+                disabled={formStatus.isSubmitting}
+              >
+                {formStatus.isSubmitting ? (
+                  <>
+                    <div className="spinner"></div>
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send size={18} />
+                    Send Message
+                  </>
+                )}
               </button>
             </form>
           </div>
