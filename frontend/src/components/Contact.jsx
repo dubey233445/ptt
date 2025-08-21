@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
-import { Mail, Phone, MapPin, Github, Linkedin, Send } from 'lucide-react';
+import { Mail, Phone, MapPin, Github, Linkedin, Send, CheckCircle, AlertCircle } from 'lucide-react';
+import axios from 'axios';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -9,27 +13,83 @@ const Contact = () => {
     message: ''
   });
 
+  const [formStatus, setFormStatus] = useState({
+    isSubmitting: false,
+    isSuccess: false,
+    isError: false,
+    errorMessage: '',
+    successMessage: ''
+  });
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
+    
+    // Clear any previous status when user starts typing
+    if (formStatus.isError || formStatus.isSuccess) {
+      setFormStatus({
+        isSubmitting: false,
+        isSuccess: false,
+        isError: false,
+        errorMessage: '',
+        successMessage: ''
+      });
+    }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Mock form submission - will be connected to backend later
-    console.log('Form submitted:', formData);
-    alert('Thank you for your message! I will get back to you soon.');
     
-    // Reset form
-    setFormData({
-      name: '',
-      email: '',
-      subject: '',
-      message: ''
+    // Set submitting state
+    setFormStatus({
+      isSubmitting: true,
+      isSuccess: false,
+      isError: false,
+      errorMessage: '',
+      successMessage: ''
     });
+
+    try {
+      const response = await axios.post(`${API}/contact`, formData);
+      
+      if (response.data.success) {
+        setFormStatus({
+          isSubmitting: false,
+          isSuccess: true,
+          isError: false,
+          errorMessage: '',
+          successMessage: response.data.message
+        });
+        
+        // Reset form
+        setFormData({
+          name: '',
+          email: '',
+          subject: '',
+          message: ''
+        });
+      }
+    } catch (error) {
+      console.error('Error submitting contact form:', error);
+      
+      let errorMessage = 'Something went wrong. Please try again later.';
+      if (error.response?.data?.detail) {
+        errorMessage = error.response.data.detail;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      setFormStatus({
+        isSubmitting: false,
+        isSuccess: false,
+        isError: true,
+        errorMessage: errorMessage,
+        successMessage: ''
+      });
+    }
   };
 
   const contactInfo = [
